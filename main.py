@@ -226,10 +226,10 @@ players_generator(int(total_players),int(computer_players))
 new_players = players_order_generator(total_players)
 new_game = True
 first_round = True
-current_round_dices = new_game_dices(all_players_dices())
 last_player = {}
 
 while new_game:
+    current_round_dices = new_game_dices(all_players_dices())
     new_round = True
     while new_round:
         #Checking for a winner
@@ -248,6 +248,8 @@ while new_game:
         else:
             #PLAY THE GAME -> new player start his turn
             for x in new_players:
+                print(new_players)
+                print(x)
                 player = x
                 print("Available dice combinations:")
                 print(list(map(display_dices_with_x,current_round_dices)))
@@ -269,45 +271,52 @@ while new_game:
                         if not liar_or_bid.isalpha():
                             print("Use only letters.")
                         elif liar_or_bid.isalpha():
+                            #LIAR
                             if liar_or_bid.lower() == 'liar':
                                 bidder = players_data['player'+str(last_player['attr'].id)]
-                                #Liar logic - challenger(current player) wins, bidder lose 1 dice
-                                if all_players_dices_grouped(all_players_dices())[int(last_player['bid'][-1])] != int(last_player['bid'][:-1]):
+
+                                if (all_players_dices_grouped(all_players_dices())[int(last_player['bid'][-1])] != int(last_player['bid'][:-1])) and WO_input == 'no':
                                     new_players = new_players_order(bidder,new_players)
                                     print(all_players_dices())
                                     print("{}, you lost 1 dice! Time for a new round.".format(last_player['attr'].name))
                                     bidder.remove_dice()
-                                    new_round = False
-                                    first_round = True
-                                    correct_inp = True
                                     print(bidder.dices)
                                     if not player_has_dices(bidder.dices):
                                         bidder.isActive = False
                                         new_players.pop(bidder)
-                                    current_round_dices = new_game_dices(all_players_dices())
-                                #Liar logic - bidder(last player) wins, challenger lose 1 dice
+                                elif (all_players_dices_grouped(all_players_dices())[int(last_player['bid'][-1])] + all_players_dices_grouped(all_players_dices())[int(1)] != int(last_player['bid'][:-1])) and WO_input == 'yes':
+                                    new_players = new_players_order(bidder,new_players)
+                                    print(all_players_dices())
+                                    print("{}, you lost 1 dice! Time for a new round.".format(last_player['attr'].name))
+                                    bidder.remove_dice()
+                                    print(bidder.dices)
+                                    if not player_has_dices(bidder.dices):
+                                        bidder.isActive = False
+                                        new_players.pop(bidder)
                                 else:
                                     new_players = new_players_order(player,new_players)
                                     print(all_players_dices())
                                     print("{}, you lost 1 dice! Time for a new round.".format(player.name))
                                     player.remove_dice()
-                                    new_round = False
-                                    first_round = True
-                                    correct_inp = True
                                     if not player_has_dices(player.dices):
                                         player.isActive = False
                                         new_players.pop(player)
-                                    current_round_dices = new_game_dices(all_players_dices())
+                                    
+                                current_round_dices = new_game_dices(all_players_dices())
+                                new_round = False
+                                first_round = True
+                            #BID
                             elif liar_or_bid.lower() == 'bid' and current_round_dices:
                                 player_bid = player.play_bid(current_round_dices)
                                 bids_data['bid_'+str(player.id)] = player_bid
                                 last_player['bid'] = player_bid
                                 last_player['attr'] = player
                                 current_round_dices = game_dices_reducer(current_round_dices,player_bid)
-                                correct_inp = True
                             else:
                                 print("Choose between 'liar' and 'bid'")
-                    break
+
+                        correct_inp = True
+                break
                             
 
                         
