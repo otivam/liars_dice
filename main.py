@@ -234,6 +234,7 @@ while new_game:
     while new_round:
         #Checking for a winner
         active_players = []
+        counter = 1
         for x in range(int(total_players)):
             if players_data['player'+str(x+1)].isActive:
                 active_players.append(players_data['player'+str(x+1)])
@@ -248,8 +249,7 @@ while new_game:
         else:
             #PLAY THE GAME -> new player start his turn
             for x in new_players:
-                print(new_players)
-                print(x)
+                print(counter)
                 player = x
                 print("Available dice combinations:")
                 print(list(map(display_dices_with_x,current_round_dices)))
