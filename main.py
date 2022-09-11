@@ -20,11 +20,16 @@ def new_game_dices(all_players_dices):
 
 
 
-def dices_generator():
+def dices_generator(numOfDices):
     dices = []
-    for x in range(0,5):
+    for x in range(0,numOfDices):
         dices.append(random.randint(1,6))
     return dices
+
+
+def new_round_players_dices_generator():
+    for x in range(int(total_players)):
+        players_data['player'+str(x+1)].dices = dices_generator(len(players_data['player'+str(x+1)].dices))
 
 
 def players_generator(total_players,computer_players):
@@ -32,24 +37,19 @@ def players_generator(total_players,computer_players):
         #generating human players
         if x < int(total_players) - int(computer_players):
             print("Hello player {}, what is your name ?".format(x+1))
-            
             PN_correct_inp = False
             while not PN_correct_inp:
                 name = input()
                 if not name:
                     print("Please enter your name")
                 elif name:
-                    players_data['player'+str(x+1)] = Player(name,dices_generator(),total_players,True,True)
+                    players_data['player'+str(x+1)] = Player(name,dices_generator(5),total_players,True,True)
                     PN_correct_inp = True
-                
-
-
-            
         #generating computer players
         else:
             name = get_random_computer_name()
             print("Hello player {}, your name is {}.".format((x+1),name))
-            players_data['player'+str(x+1)] = Player(name,dices_generator(),total_players,False,True)
+            players_data['player'+str(x+1)] = Player(name,dices_generator(5),total_players,False,True)
 
 
 
@@ -272,31 +272,34 @@ while new_game:
                             bidder = players_data['player'+str(last_player['attr'].id)]
                             print(all_players_dices())
 
-                            if (all_players_dices_grouped(all_players_dices())[int(last_player['bid'][-1])] != int(last_player['bid'][:-1])) and WO_input == 'no':
-                                new_players = new_players_order(bidder,new_players)
-                                print("{}, you lost 1 dice! Time for a new round.".format(last_player['attr'].name))
-                                bidder.remove_dice()
-                                print(bidder.dices)
-                                if not player_has_dices(bidder.dices):
-                                    bidder.isActive = False
-                                    new_players.remove(bidder)
-                            elif (all_players_dices_grouped(all_players_dices())[int(last_player['bid'][-1])] + all_players_dices_grouped(all_players_dices())[int(1)] != int(last_player['bid'][:-1])) and WO_input == 'yes':
-                                new_players = new_players_order(bidder,new_players)
-                                print("{}, you lost 1 dice! Time for a new round.".format(last_player['attr'].name))
-                                bidder.remove_dice()
-                                print(bidder.dices)
-                                if not player_has_dices(bidder.dices):
-                                    bidder.isActive = False
-                                    new_players.remove(bidder)
-                            else:
+                            if ((int(all_players_dices_grouped(all_players_dices())[int(last_player['bid'][-1])]) >= int(last_player['bid'][:-1])) and WO_input == 'no') or ((all_players_dices_grouped(all_players_dices())[int(last_player['bid'][-1])] + all_players_dices_grouped(all_players_dices())[int(1)] >= int(last_player['bid'][:-1])) and WO_input == 'yes'):
                                 new_players = new_players_order(player,new_players)
                                 print("{}, you lost 1 dice! Time for a new round.".format(player.name))
                                 player.remove_dice()
                                 if not player_has_dices(player.dices):
                                     player.isActive = False
                                     new_players.remove(player)
+                                ''' 
+                            elif (all_players_dices_grouped(all_players_dices())[int(last_player['bid'][-1])] + all_players_dices_grouped(all_players_dices())[int(1)] >= int(last_player['bid'][:-1])) and WO_input == 'yes':
+
                                 
+                                new_players = new_players_order(bidder,new_players)
+                                print("{}, you lost 1 dice! Time for a new round.".format(last_player['attr'].name))
+                                bidder.remove_dice()
+                                if not player_has_dices(bidder.dices):
+                                    bidder.isActive = False
+                                    new_players.remove(bidder)
+                                '''
+                            else:
+                                new_players = new_players_order(bidder,new_players)
+                                print("{}, you lost 1 dice! Time for a new round.".format(last_player['attr'].name))
+                                bidder.remove_dice()
+                                if not player_has_dices(bidder.dices):
+                                    bidder.isActive = False
+                                    new_players.remove(bidder)
+
                             x = 0
+                            new_round_players_dices_generator()
                             current_round_dices = new_game_dices(all_players_dices())
                             new_round = False
                             first_round = True
