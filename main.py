@@ -97,7 +97,7 @@ def get_the_dice_combination(total_players):
                 break
 
 
-    return result[::-1]
+    return result
 
 
 def display_dices_with_x(dice):
@@ -153,8 +153,43 @@ def check_winner():
         print("You have {} dices left.".format(len(active_players[0].dices)))
         print("Your reward is quarter piece of banana.")
         return True
+      
         
+def bot_play_his_bid(bot_dices, current_round_dices):
+    result = []
+    bot_dices_grouped = {
+        1:0,
+        2:0,
+        3:0,
+        4:0,
+        5:0,
+        6:0
+    }
+    for x in bot_dices:
+        bot_dices_grouped[x] = bot_dices.count(x)
+    sorted(bot_dices_grouped, key=bot_dices_grouped.get)
 
+    for value, quantity in bot_dices_grouped.items():
+        if (str(quantity) + str(value)) in current_round_dices:
+            print("Please choose your bid:")
+            print(str(quantity))
+            bid_quantity = str(quantity)
+            result.append(bid_quantity)
+
+            print("Please choose a dice number from 1 to 6")
+            print(str(value))
+            bid_number = str(value)
+            result.append(bid_number)
+
+            return result
+        else:
+            pass
+
+
+
+def bot_liar_or_bid():
+    print('bid')
+    return 'bid'
 
 class Player:
     _ids = count(1)
@@ -173,14 +208,14 @@ class Player:
             print("{}, it's your time to bid:".format(self.name))
             
             result = get_the_dice_combination(self.total_players)
-            if ''.join(result[::-1]) not in current_round_dices:
+            if ''.join(result) not in current_round_dices:
                 print("Your choise is not valid! Please enter new combination.")
                 result = get_the_dice_combination(self.total_players)
         else:
-            #TO DO -> bot logic
-            pass
+            print("{}, it's your time to bid:".format(self.name))
+            result = bot_play_his_bid(self.dices,current_round_dices)
 
-        return ''.join(result[::-1])
+        return ''.join(result)
 
     def remove_dice(self):
         self.dices.pop()
@@ -215,6 +250,8 @@ while True:
     elif total_players.isdigit():
         if int(total_players) < 2:
             print("The game is played by two or more players.")
+        elif int(total_players) > 8:
+            print("Max 8 players.")
         else:
             break
 
@@ -248,7 +285,8 @@ while new_game:
             player = new_players[x]
             x += 1
             print("Available dice combinations:")
-            print(list(map(display_dices_with_x,current_round_dices)))
+            print(current_round_dices)
+            #print(list(map(display_dices_with_x,current_round_dices)))
             print("Your dices:")
             print(player.dices)
             if first_round:
@@ -263,7 +301,11 @@ while new_game:
                 print("Last player bid: "+display_dices_with_x(last_player['bid']))
                 print(player.name + ", it's your turn. 'liar' or 'bid' ?")
                 while not correct_inp:
-                    liar_or_bid = input()
+                    if not player.isHuman:
+                        liar_or_bid = bot_liar_or_bid()
+                    else:
+                        liar_or_bid = input()
+
                     if not liar_or_bid.isalpha():
                         print("Use only letters.")
                     elif liar_or_bid.isalpha():
