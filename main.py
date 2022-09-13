@@ -1,4 +1,3 @@
-from cgitb import small
 import random
 from itertools import count
 
