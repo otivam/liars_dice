@@ -1,3 +1,4 @@
+from cgitb import small
 import random
 from itertools import count
 
@@ -154,9 +155,21 @@ def check_winner():
         print("Your reward is quarter piece of banana.")
         return True
       
-        
-def bot_play_his_bid(bot_dices, current_round_dices):
-    result = []
+
+def bot_odds(bot_dices_grouped, current_round_dices, total_players):
+    poss = {}
+    for x in range(10):
+        poss[current_round_dices[x]] = ((((int(total_players)-1)*5)*1/6)*100)/(int(current_round_dices[x][:-1])-bot_dices_grouped[int(current_round_dices[x][-1])])
+    print(dict(sorted(poss.items(), key=lambda item: item[1])))
+    smallest_val = dict(sorted(poss.items(), key=lambda item: item[1]))
+    poss = sorted(poss, key=poss.get, reverse=True)
+    poss.append(list(smallest_val.items())[-1][1])
+    print(poss)
+    
+    return poss
+
+    
+def bot_dices_grp(bot_dices):
     bot_dices_grouped = {
         1:0,
         2:0,
@@ -167,10 +180,20 @@ def bot_play_his_bid(bot_dices, current_round_dices):
     }
     for x in bot_dices:
         bot_dices_grouped[x] = bot_dices.count(x)
-    sorted(bot_dices_grouped, key=bot_dices_grouped.get)
+    bot_dices_grouped = dict(sorted(bot_dices_grouped.items(), key=lambda item: item[1]))
 
-    for value, quantity in bot_dices_grouped.items():
-        if (str(quantity) + str(value)) in current_round_dices:
+    return bot_dices_grouped
+
+        
+def bot_play_his_bid(bot_dices, current_round_dices, total_players):
+    result = []
+    bot_dices_grouped = bot_dices_grp(bot_dices)
+
+    for x in current_round_dices:
+        value = int(x[-1])
+        quantity = int(x[:-1])
+
+        if bot_dices_grouped[value] >= quantity:
             print("Please choose your bid:")
             print(str(quantity))
             bid_quantity = str(quantity)
@@ -180,16 +203,38 @@ def bot_play_his_bid(bot_dices, current_round_dices):
             print(str(value))
             bid_number = str(value)
             result.append(bid_number)
+            break
 
-            return result
-        else:
-            pass
+    if len(result) == 0:
+        print(bot_dices_grouped)
+        value = bot_odds(bot_dices_grouped, current_round_dices, total_players)[0][-1]
+        quantity = bot_odds(bot_dices_grouped, current_round_dices, total_players)[0][:-1]
+        
+        print("Please choose your bid:")
+        print(str(quantity))
+        bid_quantity = str(quantity)
+        result.append(bid_quantity)
+
+        print("Please choose a dice number from 1 to 6")
+        print(str(value))
+        bid_number = str(value)
+        result.append(bid_number)
+           
+    return result
 
 
 
-def bot_liar_or_bid():
-    print('bid')
-    return 'bid'
+def bot_liar_or_bid(bot_dices, current_round_dices, total_players):
+    bot_dices_grouped = bot_dices_grp(bot_dices)
+
+    if int(bot_odds(bot_dices_grouped, current_round_dices, total_players)[-1]) < 42:
+        print('liar')
+        return 'liar'
+    else:
+        print('bid')
+        return 'bid'
+
+    
 
 class Player:
     _ids = count(1)
@@ -213,7 +258,7 @@ class Player:
                 result = get_the_dice_combination(self.total_players)
         else:
             print("{}, it's your time to bid:".format(self.name))
-            result = bot_play_his_bid(self.dices,current_round_dices)
+            result = bot_play_his_bid(self.dices, current_round_dices, total_players)
 
         return ''.join(result)
 
@@ -302,7 +347,7 @@ while new_game:
                 print(player.name + ", it's your turn. 'liar' or 'bid' ?")
                 while not correct_inp:
                     if not player.isHuman:
-                        liar_or_bid = bot_liar_or_bid()
+                        liar_or_bid = bot_liar_or_bid(player.dices, current_round_dices, total_players)
                     else:
                         liar_or_bid = input()
 
