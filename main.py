@@ -147,6 +147,7 @@ def check_winner():
     for x in range(int(total_players)):
         if players_data['player'+str(x+1)].isActive:
             active_players.append(players_data['player'+str(x+1)])
+            
 
     if len(active_players) == 1:
         print("Great job, {}! YOU WIN!".format(active_players[0].name))
@@ -155,15 +156,31 @@ def check_winner():
         return True
       
 
+def total_active_players():
+    active_players = 0
+    for x in range(int(total_players)):
+        if players_data['player'+str(x+1)].isActive:
+            active_players += 1
+    return active_players
+
+
+
 def bot_odds(bot_dices_grouped, current_round_dices, total_players):
     poss = {}
-    for x in range(10):
-        poss[current_round_dices[x]] = ((((int(total_players)-1)*5)*1/6)*100)/(int(current_round_dices[x][:-1])-bot_dices_grouped[int(current_round_dices[x][-1])])
-    print(dict(sorted(poss.items(), key=lambda item: item[1])))
+    range_to_check = 0
+    if len(current_round_dices) > 10:
+        range_to_check = 10
+    else:
+        range_to_check = len(current_round_dices)
+
+    for x in range(range_to_check):
+        y = 1 if (int(current_round_dices[x][:-1])-bot_dices_grouped[int(current_round_dices[x][-1])]) == 0 else (int(current_round_dices[x][:-1])-bot_dices_grouped[int(current_round_dices[x][-1])])
+
+        poss[current_round_dices[x]] = ((((int(total_players)-1)*5)*1/6)*100)/y
     smallest_val = dict(sorted(poss.items(), key=lambda item: item[1]))
     poss = sorted(poss, key=poss.get, reverse=True)
     poss.append(list(smallest_val.items())[-1][1])
-    print(poss)
+
     
     return poss
 
@@ -205,7 +222,6 @@ def bot_play_his_bid(bot_dices, current_round_dices, total_players):
             break
 
     if len(result) == 0:
-        print(bot_dices_grouped)
         value = bot_odds(bot_dices_grouped, current_round_dices, total_players)[0][-1]
         quantity = bot_odds(bot_dices_grouped, current_round_dices, total_players)[0][:-1]
         
@@ -226,11 +242,12 @@ def bot_play_his_bid(bot_dices, current_round_dices, total_players):
 def bot_liar_or_bid(bot_dices, current_round_dices, total_players):
     bot_dices_grouped = bot_dices_grp(bot_dices)
 
-    if int(bot_odds(bot_dices_grouped, current_round_dices, total_players)[-1]) < 42:
+    if int(bot_odds(bot_dices_grouped, current_round_dices, total_players)[-1]) < 60:
         print('liar')
         return 'liar'
     else:
         print('bid')
+        print(total_players)
         return 'bid'
 
     
@@ -249,14 +266,14 @@ class Player:
 
     def play_bid(self,current_round_dices):
         if self.isHuman:
-            print("{}, it's your time to bid:".format(self.name))
+            #print("{}, please bid:".format(self.name))
             
             result = get_the_dice_combination(self.total_players)
             if ''.join(result) not in current_round_dices:
                 print("Your choise is not valid! Please enter new combination.")
                 result = get_the_dice_combination(self.total_players)
         else:
-            print("{}, it's your time to bid:".format(self.name))
+            #print("{}, please bid:".format(self.name))
             result = bot_play_his_bid(self.dices, current_round_dices, total_players)
 
         return ''.join(result)
@@ -272,7 +289,6 @@ class Player:
 #### GAME PLAY #######
 ######################
 print("Welcome to Liars dice, let's begin...")
-#TO DO -> wild ones rule to test
 print("Should we activate the 'wild ones' mode? (yes/no)")
 WO_correct_inp = False
 while not WO_correct_inp:
@@ -328,9 +344,8 @@ while new_game:
         while x <= len(new_players):
             player = new_players[x]
             x += 1
-            print("Available dice combinations:")
-            print(current_round_dices)
-            #print(list(map(display_dices_with_x,current_round_dices)))
+            print("{}: Available dice combinations:".format(player.name.upper()))
+            print(list(map(display_dices_with_x,current_round_dices)))
             print("Your dices:")
             print(player.dices)
             if first_round:
@@ -346,7 +361,7 @@ while new_game:
                 print(player.name + ", it's your turn. 'liar' or 'bid' ?")
                 while not correct_inp:
                     if not player.isHuman:
-                        liar_or_bid = bot_liar_or_bid(player.dices, current_round_dices, total_players)
+                        liar_or_bid = bot_liar_or_bid(player.dices, current_round_dices, total_active_players())
                     else:
                         liar_or_bid = input()
 
@@ -365,17 +380,7 @@ while new_game:
                                 if not player_has_dices(player.dices):
                                     player.isActive = False
                                     new_players.remove(player)
-                                ''' 
-                            elif (all_players_dices_grouped(all_players_dices())[int(last_player['bid'][-1])] + all_players_dices_grouped(all_players_dices())[int(1)] >= int(last_player['bid'][:-1])) and WO_input == 'yes':
-
-                                
-                                new_players = new_players_order(bidder,new_players)
-                                print("{}, you lost 1 dice! Time for a new round.".format(last_player['attr'].name))
-                                bidder.remove_dice()
-                                if not player_has_dices(bidder.dices):
-                                    bidder.isActive = False
-                                    new_players.remove(bidder)
-                                '''
+                                    print('{} is out of the game!'.format(player.name))
                             else:
                                 new_players = new_players_order(bidder,new_players)
                                 print("{}, you lost 1 dice! Time for a new round.".format(last_player['attr'].name))
@@ -383,6 +388,7 @@ while new_game:
                                 if not player_has_dices(bidder.dices):
                                     bidder.isActive = False
                                     new_players.remove(bidder)
+                                    print('{} is out of the game!'.format(bidder.name))
 
                             x = 0
                             new_round_players_dices_generator()
