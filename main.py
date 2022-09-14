@@ -35,15 +35,15 @@ def players_generator(total_players,computer_players):
         #generating human players
         if x < int(total_players) - int(computer_players):
             print("Hello player {}, what is your name ?".format(x+1))
-            PN_correct_inp = False
-            while not PN_correct_inp:
+            pn_correct_inp = False
+            while not pn_correct_inp:
                 name = input()
                 if not name:
                     print("Please enter your name")
                 elif name:
                     players_data['player'+str(x+1)] = Player(name,dices_generator(5),
                                                       total_players,True,True)
-                    PN_correct_inp = True
+                    pn_correct_inp = True
         #generating computer players
         else:
             name = get_random_computer_name()
@@ -292,13 +292,13 @@ class Player:
 ######################
 print("Welcome to Liars dice, let's begin...")
 print("Should we activate the 'wild ones' mode? (yes/no)")
-WO_correct_inp = False
-while not WO_correct_inp:
-    WO_input = input()
-    if not WO_input.isalpha():
+wo_correct_inp = False
+while not wo_correct_inp:
+    wo_input = input()
+    if not wo_input.isalpha():
         print("Use only letters.")
-    elif WO_input.isalpha() and WO_input in ['yes','no']:
-        WO_correct_inp = True
+    elif wo_input.isalpha() and wo_input in ['yes','no']:
+        wo_correct_inp = True
     else:
         print("Choose between 'yes' and 'no'")
 
@@ -374,15 +374,15 @@ while new_game:
                         if liar_or_bid.lower() == 'liar':
                             bidder = players_data['player'+str(last_player['attr'].id)]
                             print(all_players_dices())
-                            WO_yes = ((all_players_dices_grouped(all_players_dices())[int(last_player['bid'][-1])] 
+                            wo_yes = ((all_players_dices_grouped(all_players_dices())[int(last_player['bid'][-1])] 
                                     + all_players_dices_grouped(all_players_dices())[int(1)] 
                                     >= int(last_player['bid'][:-1])) 
-                                    and WO_input == 'yes')
-                            WO_no = ((int(all_players_dices_grouped(all_players_dices())[int(last_player['bid'][-1])]) 
+                                    and wo_input == 'yes')
+                            wo_no = ((int(all_players_dices_grouped(all_players_dices())[int(last_player['bid'][-1])]) 
                                     >= int(last_player['bid'][:-1])) 
-                                    and WO_input == 'no')
+                                    and wo_input == 'no')
 
-                            if WO_no or WO_yes:
+                            if wo_no or wo_yes:
                                 #IF ONE OF THESE IS TRUE
                                 new_players = new_players_order(player,new_players)
                                 print("{}, you lost 1 dice! Time for a new round.".format(player.name))
