@@ -172,10 +172,9 @@ def bot_odds(bot_dices_grouped,
         range_to_check = len(current_round_dices)
 
     for x in range(range_to_check):
-        y = 1 if (int(current_round_dices[x][:-1])
-                - bot_dices_grouped[int(current_round_dices[x][-1])]) == 0 else (int(current_round_dices[x][:-1])
-                - bot_dices_grouped[int(current_round_dices[x][-1])])
-        poss[current_round_dices[x]] = ((((int(total_players)-1)*5)*1/6)*100)/y
+        y = 6 ** (int(current_round_dices[x][:-1]) - bot_dices_grouped[int(current_round_dices[x][-1])])
+
+        poss[current_round_dices[x]] = round((1/y)*100, 3)
 
     smallest_val = dict(sorted(poss.items(), key=lambda item: item[1]))
     poss = sorted(poss, key=poss.get, reverse=True)
@@ -248,7 +247,7 @@ def bot_liar_or_bid(bot_dices,
 
     if int(bot_odds(bot_dices_grouped, 
                     current_round_dices, 
-                    total_players)[-1]) < 60:
+                    total_players)[-1]) < 3:
         print('liar')
         return 'liar'
     else:
@@ -345,8 +344,9 @@ while new_game:
             x += 1
             print("{}: Available dice combinations:".format(player.name.upper()))
             print(list(map(display_dices_with_x,current_round_dices)))
-            print("Your dices:")
-            print(player.dices)
+            if player.isHuman:
+                print("Your dices:")
+                print(player.dices)
             if first_round:
                 player_bid = player.play_bid(current_round_dices)
                 bids_data['bid_'+str(player.id)] = player_bid
